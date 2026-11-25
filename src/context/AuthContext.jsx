@@ -1,39 +1,130 @@
-import { createContext, useContext, useState } from "react";
+
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState
+} from "react";
+
+import { autenticacaoApi } from "../api";
 
 const AuthContext = createContext(null);
 
-// Usuários de demonstração (mock). Na integração com back-end,
-// isso deve ser substituído por uma chamada de API de autenticação.
-const MOCK_USERS = [
-  { login: "atendente", senha: "123456", nome: "Ana Souza", perfil: "atendente" },
-  { login: "tecnico", senha: "123456", nome: "Carlos Lima", perfil: "tecnico" },
-  { login: "admin", senha: "123456", nome: "Marcos Dias", perfil: "administrador" },
-];
-
 export function AuthProvider({ children }) {
+
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  function login(loginInput, senhaInput) {
-    const found = MOCK_USERS.find(
-      (u) => u.login === loginInput && u.senha === senhaInput
-    );
-    if (!found) {
-      return { ok: false, message: "Usuário ou senha inválidos." };
+  // Verificar sessão ao carregar o sistema
+
+  useEffect(() => {
+
+    let ativo = true;
+
+    async function verificarSessao() {
+
+      try {
+
+        const usuario =
+          await autenticacaoApi.usuarioAtual();
+
+        if (ativo) {
+          setUser(usuario);
+        }
+
+      } catch {
+
+        if (ativo) {
+          setUser(null);
+        }
+
+      } finally {
+
+        if (ativo) {
+          setLoading(false);
+        }
+
+      }
     }
-    setUser(found);
-    return { ok: true };
+
+    verificarSessao();
+
+    return () => {
+      ativo = false;
+    };
+
+  }, []);
+
+
+  // Login real
+
+  async function login(loginInput, senhaInput) {
+
+    try {
+
+      const resposta = await autenticacaoApi.login(
+        loginInput,
+        senhaInput
+      );
+
+      setUser(resposta.usuario);
+
+      return {
+        ok: true
+      };
+
+    } catch (erro) {
+
+      return {
+        ok: false,
+        message: erro.message
+      };
+
+    }
+
   }
 
-  function logout() {
-    setUser(null);
+
+  // Logout real
+
+  async function logout() {
+
+    try {
+
+      await autenticacaoApi.logout();
+
+      setUser(null);
+
+      return {
+        ok: true
+      };
+
+    } catch (erro) {
+
+      return {
+        ok: false,
+        message: erro.message
+      };
+
+    }
+
   }
+
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        loading,
+        login,
+        logout
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
 }
+
 
 export function useAuth() {
   return useContext(AuthContext);
