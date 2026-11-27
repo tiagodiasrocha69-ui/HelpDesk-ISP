@@ -17,14 +17,12 @@ export default function Layout() {
   const navigate = useNavigate();
 
   const [saindo, setSaindo] = useState(false);
-
   const [erro, setErro] = useState("");
 
 
   async function handleLogout() {
 
     setSaindo(true);
-
     setErro("");
 
     try {
@@ -66,10 +64,19 @@ export default function Layout() {
             Dashboard
           </NavLink>
 
-          {(
-            user?.perfil === "atendente" ||
-            user?.perfil === "administrador"
-          ) && (
+          <NavLink to="/chamados">
+
+            {user?.perfil === "tecnico"
+              ? "Meus Chamados"
+              : "Chamados"}
+
+          </NavLink>
+
+
+          {[
+            "administrador",
+            "atendente"
+          ].includes(user?.perfil) && (
 
             <>
 
@@ -85,21 +92,44 @@ export default function Layout() {
 
           )}
 
+
           {user?.perfil === "administrador" && (
 
-            <NavLink to="/tecnicos">
-              Técnicos
+            <>
+
+              <NavLink to="/tecnicos">
+                Técnicos
+              </NavLink>
+
+              <NavLink to="/usuarios">
+                Usuários
+              </NavLink>
+
+            </>
+
+          )}
+
+
+          {[
+            "administrador",
+            "atendente",
+            "gerente"
+          ].includes(user?.perfil) && (
+
+            <NavLink to="/relatorios">
+
+              Relatórios
+
             </NavLink>
 
           )}
 
         </nav>
 
+
         <div className="topbar-user">
 
-          <span>
-            {user?.nome}
-          </span>
+          <span>{user?.nome}</span>
 
           <span className="badge-role">
             {user?.perfil}
@@ -119,12 +149,15 @@ export default function Layout() {
 
       </header>
 
+
       <main className="page-content">
 
         {erro && (
+
           <div className="error-msg">
             {erro}
           </div>
+
         )}
 
         <Outlet />

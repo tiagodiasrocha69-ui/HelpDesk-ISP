@@ -128,6 +128,7 @@ export const tecnicosApi = {
 
 // CHAMADOS
 
+
 export const chamadosApi = {
 
     listar: (filtros = {}) => {
@@ -147,5 +148,92 @@ export const chamadosApi = {
         api("/chamados", {
             method: "POST",
             body: JSON.stringify(dados)
+        }),
+
+    atribuir: (id, tecnico_id) =>
+        api(`/chamados/${id}/atribuir`, {
+            method: "PUT",
+            body: JSON.stringify({ tecnico_id })
+        }),
+
+    atualizarStatus: (id, status, observacao = "") =>
+        api(`/chamados/${id}/status`, {
+            method: "PUT",
+            body: JSON.stringify({
+                status,
+                observacao
+            })
+        }),
+
+    historico: (id) =>
+        api(`/chamados/${id}/historico`)
+};
+// DASHBOARD
+
+export const dashboardApi = {
+
+    consultar: () =>
+        api("/dashboard")
+
+};
+
+
+// GERENCIAMENTO DE USUÁRIOS
+
+export const usuariosApi = {
+
+    listar: () =>
+        api("/usuarios"),
+
+    cadastrar: (dados) =>
+        api("/usuarios", {
+            method: "POST",
+            body: JSON.stringify(dados)
+        }),
+
+    editar: (id, dados) =>
+        api(`/usuarios/${id}`, {
+            method: "PUT",
+            body: JSON.stringify(dados)
+        }),
+
+    alterarStatus: (id, ativo) =>
+        api(`/usuarios/${id}/status`, {
+            method: "PUT",
+            body: JSON.stringify({ ativo })
+        }),
+
+    redefinirSenha: (id, senha) =>
+        api(`/usuarios/${id}/senha`, {
+            method: "PUT",
+            body: JSON.stringify({ senha })
         })
+};
+
+// RELATÓRIOS
+
+export const relatoriosApi = {
+
+    gerar: (filtros = {}) => {
+
+        const parametros = new URLSearchParams();
+
+        Object.entries(filtros).forEach(([chave, valor]) => {
+
+            if (valor !== "" && valor != null) {
+
+                parametros.append(chave, valor);
+
+            }
+
+        });
+
+        const consulta = parametros.toString();
+
+        return api(
+            `/relatorios${consulta ? `?${consulta}` : ""}`
+        );
+
+    }
+
 };
